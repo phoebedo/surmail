@@ -9,7 +9,6 @@ const User = mongoose.model("users");
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
-
 //id => user
 passport.deserializeUser((id, done) => {
   User.findById(id).then((user) => {
@@ -23,24 +22,24 @@ passport.use(
       clientID: keys.googleClientID,
       clientSecret: keys.googleClientSecret,
       callbackURL: "/auth/google/callback",
-      proxy: true
+      proxy: true,
     },
-    (accessToken, refreshToken, profile, done) => {
-      User.findOne({
+
+    async (accessToken, refreshToken, profile, done) => {
+      const existingUser = await User.findOne({
         googleId: profile.id,
-      }).then((existingUser) => {
-        if (existingUser) {
-          //already exist in database
-          done(null, existingUser);
-        } else {
-          //Add new user to database
-          new User({
-            googleId: profile.id,
-          })
-            .save()
-            .then((user) => done(null, user));
-        }
       });
+      if (existingUser) {
+        //already exist in database
+        return done(null, existingUser);
+      }
+      else {
+        //Add new user to database
+        const user = await new User({
+          googleId: profile.id,
+        }).save()
+        done(null, user);
+      }
     }
   )
 );
