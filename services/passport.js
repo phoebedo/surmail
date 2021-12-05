@@ -5,6 +5,7 @@ const keys = require("../config/key");
 
 const User = mongoose.model("users");
 
+
 //user => id
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -32,12 +33,11 @@ passport.use(
       if (existingUser) {
         //already exist in database
         return done(null, existingUser);
-      }
-      else {
+      } else {
         //Add new user to database
         const user = await new User({
           googleId: profile.id,
-        }).save()
+        }).save();
         done(null, user);
       }
     }
